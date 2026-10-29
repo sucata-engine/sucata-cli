@@ -1,54 +1,16 @@
 package cli
 
 import "../common"
-import "../filesystem"
 import "../shaderbuilder"
 import "core:fmt"
 import "core:path/filepath"
 import "core:strings"
 
 SHADER_COMMAND :: Command {
-	command     = "shader",
-	info_msg    = "sucata shader - Util to shaders on sucata",
-	subcommands = {SHADER_BUILD_COMMAND, SHADER_CREATE_COMMAND},
-}
-
-SHADER_BUILD_COMMAND :: Command {
-	command = "build",
+	command = "shader",
 	args_size = 1,
-	info_msg = "sucata shader build <file> - Builds a .glsl file to sucata shader file",
-	error_msg = "Error: 'build' command requires a <file> argument.",
-	handler = proc(args: []string) {
-		file_path_args := args[0]
-		if !strings.has_suffix(file_path_args, ".glsl") {
-			file_path_args = fmt.tprintf("%s.glsl", file_path_args)
-		}
-		current_directory, _ := filepath.abs(".", context.allocator)
-		defer delete(current_directory)
-
-		file_path, _ := filepath.join({current_directory, file_path_args}, context.allocator)
-		defer delete(file_path)
-
-		filesystem.init_run_paths(file_path, "shader.glsl")
-
-		common.print_info("Building shader: %s", filesystem.location.file)
-
-		output_path, success := shaderbuilder.build_shader(file_path)
-		if success {
-			common.print_success("Generated sucata shader: %s", output_path)
-		} else {
-			common.print_error("Failed to build shader: %s", filesystem.location.file)
-		}
-
-		filesystem.uninit_paths()
-	},
-}
-
-SHADER_CREATE_COMMAND :: Command {
-	command = "create",
-	args_size = 1,
-	info_msg = "sucata shader create <file> [--post-processing/-pp] [--font/-f] - Create a base .glsl shader file",
-	error_msg = "Error: 'create' command requires a <file> argument.",
+	info_msg = "sucata shader <file> [--post-processing/-pp] [--font/-f] - Create a base .glsl shader file",
+	error_msg = "Error: 'shader' command requires a <file> argument.",
 	handler = proc(args: []string) {
 		file_path_args := args[0]
 		if !strings.has_suffix(file_path_args, ".glsl") {
@@ -59,11 +21,9 @@ SHADER_CREATE_COMMAND :: Command {
 		file_path, _ := filepath.join({current_directory, file_path_args}, context.allocator)
 		defer delete(file_path)
 
-		aditional_flags := args[1:]
 		is_post_processing := false
-		is_grayscale := false
 		is_font_shader := false
-		for flag in aditional_flags {
+		for flag in args[1:] {
 			if flag == "--post-processing" || flag == "-pp" {
 				is_post_processing = true
 				break

@@ -51,7 +51,25 @@ generate_assets :: proc(src_path: string, main_file: string, output_path: string
 	total_size := 0
 
 	for file in files {
-		data, read_err := os.read_entire_file_from_path(file, context.allocator)
+		source_file := file
+		shader_rel_path := ""
+		shader_schd_file := ""
+		if strings.has_suffix(file, ".glsl") {
+			rel, schd, built := build_project_shader(src_path, file)
+			if !built {
+				delete(rel)
+				delete(schd)
+				continue
+			}
+			shader_rel_path = rel
+			shader_schd_file = schd
+			source_file = schd
+		}
+		defer if shader_schd_file != "" {
+			delete(shader_schd_file)
+		}
+
+		data, read_err := os.read_entire_file_from_path(source_file, context.allocator)
 		defer delete(data)
 
 		if read_err != nil {
@@ -73,6 +91,11 @@ generate_assets :: proc(src_path: string, main_file: string, output_path: string
 		if was_allocated {
 			delete(rel_path)
 			rel_path = normalized_path
+		}
+
+		if shader_rel_path != "" {
+			delete(rel_path)
+			rel_path = shader_rel_path
 		}
 
 		final_data: []byte

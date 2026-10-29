@@ -14,10 +14,10 @@ Dump_Buffer :: struct {
 }
 
 @(private)
-lua_writer :: proc "c" (L: ^lua.State, p: rawptr, sz: c.size_t, ud: rawptr) -> c.int {
+lua_writer :: proc "c" (L: ^lua.State, p: rawptr, sz: ^c.size_t, ud: rawptr) -> c.int {
 	context = runtime.default_context()
 
-	size := int(sz)
+	size := int(uintptr(sz))
 	if p == nil || size == 0 {
 		return 0
 	}

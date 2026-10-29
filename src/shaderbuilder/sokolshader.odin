@@ -6,7 +6,27 @@ import "core:fmt"
 import "core:os"
 import "core:path/filepath"
 
-build_sokol_shader :: proc(input_file: string) -> (bool, string) {
+current_os_shader_lang :: proc() -> string {
+	when ODIN_OS == .Windows {
+		return "hlsl5"
+	} else when ODIN_OS == .Darwin {
+		return "metal_macos"
+	} else {
+		return "glsl430"
+	}
+}
+
+current_os_build_langs :: proc() -> string {
+	when ODIN_OS == .Windows {
+		return "glsl430:hlsl5"
+	} else when ODIN_OS == .Darwin {
+		return "glsl430:metal_macos"
+	} else {
+		return "glsl430"
+	}
+}
+
+build_sokol_shader :: proc(input_file: string, langs: string) -> (bool, string) {
 	sucata_path := filesystem.get_sucata_folder()
 	defer delete(sucata_path)
 	if !os.exists(input_file) {
@@ -42,7 +62,7 @@ build_sokol_shader :: proc(input_file: string) -> (bool, string) {
 			"-o",
 			temp_shader_path,
 			"-l",
-			"glsl430:hlsl5:metal_macos:wgsl",
+			langs,
 			"-f",
 			"bare_yaml",
 		},
@@ -65,6 +85,10 @@ build_sokol_shader :: proc(input_file: string) -> (bool, string) {
 	}
 	if len(stderr_file) > 0 {
 		common.print_error("[sokol-shdc] %s", string(stderr_file))
+	}
+
+	if process_state.exit_code != 0 {
+		return false, ""
 	}
 
 	output_temp_path := fmt.aprintf("{}_reflection.yaml", temp_shader_path)

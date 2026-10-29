@@ -128,13 +128,13 @@ create_macos_app_bundle :: proc(
 
 	executable_path, _ := filepath.join({macos_path, engine_name}, context.allocator)
 	exe_handle, open_err := os.open(executable_path, os.O_WRONLY | os.O_CREATE | os.O_TRUNC)
-	if open_err != 0 {
+	if open_err != nil {
 		common.print_error("Error opening executable for writing: %s", open_err)
 		return
 	}
 
 	bytes_written, write_err := os.write(exe_handle, engine_data)
-	if write_err != 0 {
+	if write_err != nil {
 		common.print_error("Error writing engine data: %s", write_err)
 		os.close(exe_handle)
 		return
@@ -219,7 +219,6 @@ create_macos_app_bundle :: proc(
 
 embed_linux_default_icon :: proc(output_path: string) {
 	output_dir := filepath.dir(output_path)
-	defer delete(output_dir)
 	icon_output, _ := filepath.join({output_dir, "icon.png"}, context.allocator)
 	defer delete(icon_output)
 	_ = os.write_entire_file(icon_output, DEFAULT_ICON_LINUX)
@@ -232,7 +231,6 @@ embed_linux_icon :: proc(output_path: string, icon_path: string) {
 	}
 
 	output_dir := filepath.dir(output_path)
-	defer delete(output_dir)
 	icon_output, _ := filepath.join({output_dir, "icon.png"}, context.allocator)
 	defer delete(icon_output)
 	if icon_data, err := os.read_entire_file_from_path(icon_path, context.allocator); err == nil {
@@ -243,7 +241,6 @@ embed_linux_icon :: proc(output_path: string, icon_path: string) {
 
 embed_windows_default_icon :: proc(exe_path: string) {
 	exe_dir := filepath.dir(exe_path)
-	defer delete(exe_dir)
 	icon_output, _ := filepath.join({exe_dir, "icon.ico"}, context.allocator)
 	defer delete(icon_output)
 	_ = os.write_entire_file(icon_output, DEFAULT_ICON_WINDOWS)
@@ -261,7 +258,6 @@ embed_windows_icon :: proc(exe_path: string, icon_path: string) {
 	}
 
 	exe_dir := filepath.dir(exe_path)
-	defer delete(exe_dir)
 	icon_output, _ := filepath.join({exe_dir, "icon.ico"}, context.allocator)
 	defer delete(icon_output)
 	if icon_data, err := os.read_entire_file_from_path(icon_path, context.allocator); err == nil {

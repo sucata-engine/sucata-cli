@@ -28,9 +28,9 @@ free_yaml_value :: proc(value: ^YamlValue) {
 		delete(v)
 
 	case map[string]YamlValue:
-		for k, _ in v {
+		for k, &item in v {
+			free_yaml_value(&item)
 			delete(k)
-			free_yaml_value(&v[k])
 		}
 		delete(v)
 	}
@@ -194,8 +194,12 @@ get_indent :: proc(line: string) -> int {
 parse_primitive_value :: proc(value: string) -> YamlValue {
 	value := strings.trim_space(value)
 
-	if bool_value, ok := strconv.parse_bool(value); ok {
-		return bool_value
+	if value == "true" {
+		return true
+	}
+
+	if value == "false" {
+		return false
 	}
 
 	if int_value, ok := strconv.parse_i64(value); ok {
