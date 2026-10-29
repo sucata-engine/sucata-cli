@@ -128,13 +128,13 @@ create_macos_app_bundle :: proc(
 
 	executable_path, _ := filepath.join({macos_path, engine_name}, context.allocator)
 	exe_handle, open_err := os.open(executable_path, os.O_WRONLY | os.O_CREATE | os.O_TRUNC)
-	if open_err != 0 {
+	if open_err != nil {
 		common.print_error("Error opening executable for writing: %s", open_err)
 		return
 	}
 
 	bytes_written, write_err := os.write(exe_handle, engine_data)
-	if write_err != 0 {
+	if write_err != nil {
 		common.print_error("Error writing engine data: %s", write_err)
 		os.close(exe_handle)
 		return

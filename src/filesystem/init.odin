@@ -15,8 +15,8 @@ init_run_paths :: proc(file: string, default_file: string = "main.lua") {
 		location.file, _ = filepath.join({file_absolute, default_file}, context.allocator)
 	}
 
-	location.src = filepath.dir(location.file)
-	location.build = filepath.dir(location.file)
+	location.src = strings.clone(filepath.dir(location.file))
+	location.build = strings.clone(filepath.dir(location.file))
 	location.name = filepath.base(location.src)
 
 	when ODIN_OS == .Windows {

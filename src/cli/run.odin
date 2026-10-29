@@ -1,5 +1,7 @@
 package cli
 
+import build "../build"
+import "../common"
 import "../filesystem"
 import "core:fmt"
 import "core:os"
@@ -16,6 +18,12 @@ RUN_COMMAND :: Command {
 		defer delete(current_directory)
 		file_path, err2 := filepath.join({current_directory, file_path_args}, context.allocator)
 		defer delete(file_path)
+
+		filesystem.init_run_paths(file_path)
+		if !build.build_project_shaders(filesystem.location.file) {
+			common.print_warning("Some shaders failed to build, the game may not render them")
+		}
+		filesystem.uninit_paths()
 
 		sucata_path := filesystem.get_sucata_player_path()
 		defer delete(sucata_path)
