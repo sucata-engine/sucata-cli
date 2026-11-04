@@ -9,7 +9,7 @@ import "core:path/filepath"
 import "core:strings"
 
 BUILD_HEADER :: "SUCATA_BUILD_"
-LUA_DLL_FILE_NAME :: "lua54.dll"
+LUA_DLL_FILE_NAME :: "lua51.dll"
 SDL_DLL_FILE_NAME :: "SDL3.dll"
 
 DEFAULT_ICON_WINDOWS :: #load("../../assets/icons/sucata.ico")

@@ -13,7 +13,7 @@ import "core:path/filepath"
 import "core:strings"
 import "core:text/regex"
 import "vendor:compress/lz4"
-import lua "vendor:lua/5.4"
+import lua "../luajit"
 
 LUA_REQUIRE_REGEX :: `require\s*\(\s*["']([^"']+)["']\s*\)`
 FILES_REGEX :: `["']((?:src)://[^"']+)["']`
