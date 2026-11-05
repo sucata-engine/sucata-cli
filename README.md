@@ -14,10 +14,6 @@ Written in [Odin](https://odin-lang.org/).
 | `sucata update` | Self-update the CLI. |
 | `sucata version` | Print CLI/engine version. |
 
-## Shared Folder
-
-- http -> https://github.com/laytan/odin-http
-
 ## Setup project
 
 1. Install [odin](https://odin-lang.org/) version: dev-2026-04-nightly:a896fb2

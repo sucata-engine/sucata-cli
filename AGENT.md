@@ -22,14 +22,14 @@ sucata-cli/
 │   ├── build-debug/      odin build ... -debug -sanitize:address
 │   ├── build-release/    odin build ... (optimized, no debug flags)
 │   ├── install-luajit/   builds LuaJIT (same pinned commit as sucata-player) into src/luajit/lib/<os>/
-│   └── install-shared/   clones the `http` shared Odin lib into $(odin root)/shared and runs install-luajit
+│   └── install-shared/   runs install-luajit
 ├── sokol-shdc/           Prebuilt sokol-shdc compiler binaries (linux, linux-arm, osx, osx-arm)
 ├── assets/               Default engine icons embedded at compile time (icons/*.ico, *.icns, *.png)
 ├── sucata                Compiled CLI binary (build artifact, checked in — not source)
 └── README.md
 ```
 
-Note: unlike `sucata-player`, this project does **not** link `sokol` directly (it never renders anything) — `scripts/install-shared` only clones `odin-http`, not `sokol-odin`. There is no `ols.json` or other project config file here.
+Note: unlike `sucata-player`, this project does **not** link `sokol` directly (it never renders anything) — `scripts/install-shared` only builds LuaJIT, it doesn't clone `sokol-odin`. The `update` command shells out to `curl` (bundled with Windows 10+) instead of linking an HTTP lib. There is no `ols.json` or other project config file here.
 
 ## Packages under `src/`
 
@@ -61,7 +61,7 @@ Important: this CLI never compiles the engine from source. `sucata build` **copi
 ## Dev workflow
 
 1. Install Odin (version pinned in `README.md`, currently `dev-2026-04-nightly:a896fb2`).
-2. `./scripts/install-shared/unix.sh` (or `win.ps1`) — clones the `http` shared lib into Odin's `shared:` collection and builds LuaJIT. The LuaJIT commit must match `sucata-player`, since bytecode is only guaranteed to load on the same LuaJIT build.
+2. `./scripts/install-shared/unix.sh` (or `win.ps1`) — builds LuaJIT. The LuaJIT commit must match `sucata-player`, since bytecode is only guaranteed to load on the same LuaJIT build.
 3. Build: `./scripts/build-debug/unix.sh` (debug + ASan) or `./scripts/build-release/unix.sh` (optimized). Both invoke `odin build src/ -out:sucata [...]`.
 4. For CLI commands to actually work end-to-end (`run`/`build`), a built `sucata-player` binary must exist alongside the `sucata` binary — build that from the sibling `sucata-player` repo first.
 
