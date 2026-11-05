@@ -21,7 +21,8 @@ sucata-cli/
 ├── scripts/
 │   ├── build-debug/      odin build ... -debug -sanitize:address
 │   ├── build-release/    odin build ... (optimized, no debug flags)
-│   └── install-shared/   clones the `http` shared Odin lib into $(odin root)/shared
+│   ├── install-luajit/   builds LuaJIT (same pinned commit as sucata-player) into src/luajit/lib/<os>/
+│   └── install-shared/   clones the `http` shared Odin lib into $(odin root)/shared and runs install-luajit
 ├── sokol-shdc/           Prebuilt sokol-shdc compiler binaries (linux, linux-arm, osx, osx-arm)
 ├── assets/               Default engine icons embedded at compile time (icons/*.ico, *.icns, *.png)
 ├── sucata                Compiled CLI binary (build artifact, checked in — not source)
@@ -36,7 +37,8 @@ Note: unlike `sucata-player`, this project does **not** link `sokol` directly (i
 |---|---|---|
 | `main` | `src/main.odin` | Entry point. Locates the sibling `sucata-player` binary, queries its `--version`, sets up logging, calls `cli.main()`. |
 | `cli` | `src/cli/` | Command dispatch. `interfaces.odin` defines the `Command` struct (name, handler, subcommands); `cli.odin` recursively resolves subcommands from `os.args`; `main.odin` registers the root command tree (`run`, `build`, `version`, `shader`, `update`). Each subcommand has its own file: `build.odin`, `run.odin`, `shader.odin`, `update.odin`, `version.odin`. |
-| `build` | `src/build/` | Turns a game project into a distributable. `assets.odin` walks Lua `require(...)`/`"src://..."` references, compiles `.lua` files to bytecode (via `lua_compile.odin`, using the embedded Lua 5.4 VM), optionally recompresses opaque images as JPEG when `--optimize` is passed (`optimize_images.odin`, skips anything with an alpha channel and never resizes, so atlas UVs stay valid), LZ4-compresses everything into a single `assets.scta` archive (manifest + payload), and returns a SHA-256 hash of it. `engine.odin`'s `clone_engine` copies the prebuilt `sucata-player` binary and appends a `SUCATA_BUILD_<hash>` trailer so the player can find its embedded assets at runtime; it also handles per-OS packaging (Windows: bundles `lua54.dll`/`SDL3.dll`, strips console subsystem, embeds `.ico`; Linux: writes a sidecar icon; macOS: builds a full `.app` bundle). |
+| `build` | `src/build/` | Turns a game project into a distributable. `assets.odin` walks Lua `require(...)`/`"src://..."` references, compiles `.lua` files to stripped LuaJIT bytecode (via `lua_compile.odin`, which calls `string.dump(fn, true)` on the embedded LuaJIT VM, so the output matches the LuaJIT inside `sucata-player`), optionally recompresses opaque images as JPEG when `--optimize` is passed (`optimize_images.odin`, skips anything with an alpha channel and never resizes, so atlas UVs stay valid), LZ4-compresses everything into a single `assets.scta` archive (manifest + payload), and returns a SHA-256 hash of it. `engine.odin`'s `clone_engine` copies the prebuilt `sucata-player` binary and appends a `SUCATA_BUILD_<hash>` trailer so the player can find its embedded assets at runtime; it also handles per-OS packaging (Windows: bundles `lua51.dll`/`SDL3.dll`, strips console subsystem, embeds `.ico`; Linux: writes a sidecar icon; macOS: builds a full `.app` bundle). |
+| `luajit` | `src/luajit/` | LuaJIT 2.1 binding (copy of `sucata-player/src/luajit/luajit.odin`; keep both in sync). |
 | `common` | `src/common/` | Small shared types (`Asset_Entry`, `Asset_Archive`) and colored console print helpers (`print_error`, `print_success`, etc). |
 | `filesystem` | `src/filesystem/` | Resolves `src://`/`data://`/`build://` virtual paths to real ones; locates the CLI's own folder and the sibling `sucata-player[.exe]` binary; sets up per-OS data directories. |
 | `shader_builder` (dir: `shaderbuilder/`) | `src/shaderbuilder/` | The shader compilation pipeline (see below). |
@@ -59,7 +61,7 @@ Important: this CLI never compiles the engine from source. `sucata build` **copi
 ## Dev workflow
 
 1. Install Odin (version pinned in `README.md`, currently `dev-2026-04-nightly:a896fb2`).
-2. `./scripts/install-shared/unix.sh` (or `win.ps1`) — clones the `http` shared lib into Odin's `shared:` collection.
+2. `./scripts/install-shared/unix.sh` (or `win.ps1`) — clones the `http` shared lib into Odin's `shared:` collection and builds LuaJIT. The LuaJIT commit must match `sucata-player`, since bytecode is only guaranteed to load on the same LuaJIT build.
 3. Build: `./scripts/build-debug/unix.sh` (debug + ASan) or `./scripts/build-release/unix.sh` (optimized). Both invoke `odin build src/ -out:sucata [...]`.
 4. For CLI commands to actually work end-to-end (`run`/`build`), a built `sucata-player` binary must exist alongside the `sucata` binary — build that from the sibling `sucata-player` repo first.
 

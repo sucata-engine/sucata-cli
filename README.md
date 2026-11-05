@@ -21,7 +21,7 @@ Written in [Odin](https://odin-lang.org/).
 ## Setup project
 
 1. Install [odin](https://odin-lang.org/) version: dev-2026-04-nightly:a896fb2
-2. Install the shared libs, you can use `./scripts/install-shared/unix.sh` or `./scripts/install-shared/win.ps1`
+2. Install the shared libs, you can use `./scripts/install-shared/unix.sh` or `./scripts/install-shared/win.ps1` (it also builds LuaJIT via `scripts/install-luajit`; on Windows run it from a "x64 Native Tools Command Prompt for VS")
 3. Now you can edit!
 
 ## Build project
